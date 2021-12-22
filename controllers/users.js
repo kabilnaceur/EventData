@@ -74,7 +74,7 @@ exports.editPassword = async (req, res) => {
 exports.signupUser = (req, res) => {
 
     User.find({
-        username: req.body.login
+        username: req.body.username
     })
         .exec()
         .then(user => {
@@ -98,7 +98,7 @@ exports.signupUser = (req, res) => {
                                         const user = new User({
                                             name: req.body.name,
                                             email: req.body.email,
-                                            username: req.body.login,
+                                            username: req.body.username,
                                             password: hash,
 
                                         })
@@ -120,5 +120,46 @@ exports.signupUser = (req, res) => {
 
                 })
             }
+        })
+}
+// login
+exports.loginUser = (req, res, next) => {
+    User.find({ username: req.body.username})
+        .exec()
+        .then(user => {
+            if (user.length < 1) {
+                return res.status(401).json({
+                    message: 'auth failed'
+                })
+            }
+            bcrypt.compare(req.body.password, user[0].password, (err, result) => {
+                if (err) {
+                    return res.status(401).json({
+                        message: 'auth failed'
+                    })
+                }
+                if (result) {
+                    const token = jwt.sign({
+                        username: user[0].username,
+                        userId: user[0]._id
+                    }, process.env.JWT_KEY, {
+                        //expiresIn: "1h"
+                    })
+                    return res.status(200).json({
+                        message: 'auth successful',
+                        token: token,
+                        user: user[0]
+                    })
+                }
+                return res.status(401).json({
+                    message: 'auth failed'
+                })
+            })
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            })
         })
 }
