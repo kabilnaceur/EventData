@@ -20,8 +20,9 @@ type : {
         type: Date
     },
  
-user: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
 likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+comments:[{ type:String }]
 
 })
 module.exports = mongoose.model('Event',EventSchema)

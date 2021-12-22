@@ -132,7 +132,7 @@ exports.loginUser = (req, res, next) => {
                     message: 'auth failed'
                 })
             }
-            bcrypt.compare(req.body.password, user[0].password, (err, result) => {
+            bcrypt.compare(req.body.password,user[0].password, (err, result) => {
                 if (err) {
                     return res.status(401).json({
                         message: 'auth failed'
@@ -163,3 +163,14 @@ exports.loginUser = (req, res, next) => {
             })
         })
 }
+// get connect user 
+exports.getCurrentUser = async (req, res) => {
+    const user = await User.findById(req.user.userId)
+        .select('-password')
+
+  
+
+
+
+    res.status(200).json({ user: user });
+};

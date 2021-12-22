@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
 const userRoute = require('./routes/users')
+const eventRoute = require('./routes/events')
 const bodyParser = require ('body-parser')
 const cors = require ('cors');
 const PORT = 4000;
@@ -10,6 +11,7 @@ require('dotenv/config')
 app.use(bodyParser.json())
 app.use(cors());
 app.use('/users',userRoute)
+app.use('/events',eventRoute)
 
 app.get('/',(rep,res)=>{
     res.send("we are one home")
