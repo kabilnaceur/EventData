@@ -13,8 +13,10 @@ type : {
         type:Number,
         default:1
     },
-    descreption : {
-        type : String
+    description: {
+        type : String,
+        required:true
+
     },
     date : {
         type: String
@@ -25,8 +27,8 @@ type : {
     },
  
 user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+comments:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment'  }],
 likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-comments:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment'  }]
 
 })
 module.exports = mongoose.model('Event',EventSchema)

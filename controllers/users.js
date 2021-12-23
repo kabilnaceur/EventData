@@ -2,6 +2,7 @@ const User = require('../models/user')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const Event = require('../models/event')
+const mongoose = require('mongoose')
 
 //get all users
 
@@ -182,18 +183,19 @@ exports.getCurrentUser = async (req, res) => {
 
 };
 // add like to event
-exports.addLike = async (req, res) => {
+exports.addLikes = async (req, res) => {
     try {
-        const eventId = req.params.eventId
+        const eventId = req.body.eventId
+        const isValidId = mongoose.Types.ObjectId.isValid(eventId)
+        if (isValidId) {
+            const event = await Event.findOne({ _id: eventId })
+            if (event) {
 
-        const event = await Event.findOne({ _id: eventId})
-        const user = await User.findOne({ _id: req.user.userId})
-            if (user) {
-
-                await User.updateOne({ _id: user._id}, { $push: { likes: event} })
+                await User.updateOne({ _id: req.user.userId }, { $push: { likes: event } })
                 return res.status(200).json({ message: 'event successfully saved' })
             }
-        
+        }
+        return res.status(404).json({ message: 'event not found' })
 
 
     } catch (error) {
@@ -230,9 +232,9 @@ exports.addEvent = async (req, res) => {
         const event = new Event({
             name:req.body.name,
             date:req.body.date,
-            description : req.body.description,
             location:req.body.location,
             type:req.body.type,
+            description:req.body.des,
             user: user._id,
 
 

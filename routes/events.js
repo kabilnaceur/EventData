@@ -8,6 +8,7 @@ router.get ('/:eventId',check,EventController.getEvent)
 router.delete ('/:eventId',check,EventController.deleteEvent)
 router.post('/',check,EventController.createEvent)
 router.put ('/:eventId',check,EventController.updateEvent)
-
+router.post('/comments',check,EventController.addComment)
+router.delete('/comments/:commentId',check,EventController.deleteComment)
 
 module.exports = router ;

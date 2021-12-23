@@ -1,9 +1,17 @@
 const Event = require('../models/event')
+const User = require('../models/user')
+const Comment = require('../models/comment')
 
 // get all events
 exports.getEvents = async (req,res)=> {
     Event.find()
     .populate({ path: 'user', model: 'User' })
+    .populate({
+        path: 'comments', model: 'Comment', populate: {
+            path: 'user',
+            model: 'User'
+        }
+    })
     .exec()
     .then(data => {
         res.json(data);
@@ -21,6 +29,13 @@ exports.getEvents = async (req,res)=> {
 
 exports.getEvent = async (req, res) => {
     Event.findById(req.params.eventId)
+    .populate({ path: 'user', model: 'User' })
+    .populate({
+        path: 'comments', model: 'Comment', populate: {
+            path: 'user',
+            model: 'User'
+        }
+    })
     .exec()
     .then(data => {
         res.json(data);
@@ -50,7 +65,7 @@ exports.createEvent = (req,res)=>{
     const event = new Event ({
         name:req.body.name,
         date:req.body.date,
-        description : req.body.description,
+        description : req.body.des,
         location:req.body.location,
         type:req.body.type,
         user : req.user.userId
@@ -77,7 +92,7 @@ exports.updateEvent = async (req,res)=> {
         { $set: {
             name:req.body.name,
             date:req.body.date,
-            description : req.body.description,
+            description : req.body.des,
             location:req.body.location,
             type:req.body.type,
 
@@ -95,4 +110,48 @@ res.status(200).json({event:result,name:name,type:type,location:location,date:da
     })
 
 
+}
+// add comment to event
+exports.addComment = async (req, res) => {
+    try {
+        const user = await User.findOne({ _id: req.user.userId })
+        const comment = new Comment({
+            comment:req.body.comment,
+            user: user._id,
+
+
+        })
+
+
+
+        await Event.updateOne({ _id: req.body.eventId }, { $push: { comments: comment } })
+        await comment.save()
+        return res.status(200).json({ message: 'comment successfully saved' })
+
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
+}
+//delete comment to event
+exports.deleteComment = async (req, res) => {
+    try {
+
+
+        const comment = await Comment.findOne({ _id: req.params.commentId })
+        if (comment) {
+
+            await Event.updateOne({ _id: req.body.eventId }, { $pull: { comments: comment._id } })
+            return res.status(200).json({ message: 'comment successfully deleted' })
+        }
+
+        return res.status(404).json({ message: 'comment not found' })
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
 }
