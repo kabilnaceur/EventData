@@ -173,7 +173,7 @@ exports.getCurrentUser = async (req, res) => {
         const user = await User.find({ _id: req.user.userId})
             
             .exec()
-        res.status(200).json({ connectedUser: user })
+        res.status(200).json({ connectedUser: user[0] })
     } catch (error) {
         console.log(error)
         res.status(500).json({ error: error.message });
@@ -271,3 +271,17 @@ exports.deleteEvent = async (req, res) => {
         console.log(error)
     }
 }
+// logout user 
+exports.userLogout = async (req, res) => {
+    try {
+        await Token.deleteOne({
+            user: req.user._id,
+        });
+
+        res.status(200).json({
+            message: "user logged out",
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
