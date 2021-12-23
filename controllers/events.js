@@ -3,6 +3,7 @@ const Event = require('../models/event')
 // get all events
 exports.getEvents = async (req,res)=> {
     Event.find()
+    .populate({ path: 'user', model: 'User' })
     .exec()
     .then(data => {
         res.json(data);

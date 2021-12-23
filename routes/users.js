@@ -9,6 +9,9 @@ router.get ('/:userId',UserController.getUser)
 router.delete ('/:userId' ,UserController.deleteUser)
 router.post('/' ,UserController.signupUser)
 router.post("/login" ,UserController.loginUser)
-router.get('/me',check ,UserController.getCurrentUser)
-
+router.get('/userconn',check ,UserController.getCurrentUser)
+router.post('/events',check,UserController.addEvent)
+router.delete('/events/:eventId',check,UserController.deleteEvent)
+router.patch('/likes/:eventId',check,UserController.addLike)
+router.delete('/likes/:eventId',check,UserController.deleteLike)
 module.exports = router ;

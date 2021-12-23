@@ -1,6 +1,7 @@
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const Event = require('../models/event')
 
 //get all users
 
@@ -165,12 +166,108 @@ exports.loginUser = (req, res, next) => {
 }
 // get connect user 
 exports.getCurrentUser = async (req, res) => {
-    const user = await User.findById(req.user.userId)
-        .select('-password')
 
-  
+    try {
+        console.log(req.user)
 
+        const user = await User.find({ _id: req.user.userId})
+            
+            .exec()
+        res.status(200).json({ connectedUser: user })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: error.message });
 
+    }
 
-    res.status(200).json({ user: user });
 };
+// add like to event
+exports.addLike = async (req, res) => {
+    try {
+        const eventId = req.params.eventId
+
+        const event = await Event.findOne({ _id: eventId})
+        const user = await User.findOne({ _id: req.user.userId})
+            if (user) {
+
+                await User.updateOne({ _id: user._id}, { $push: { likes: event} })
+                return res.status(200).json({ message: 'event successfully saved' })
+            }
+        
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
+}
+// delete Like
+exports.deleteLike = async (req, res) => {
+    try {
+       
+      
+        const eventId = req.params.eventId
+
+        const event = await Event.findOne({ _id: eventId})   
+                 if (event) {
+
+                await User.updateOne({ _id: req.user.userId}, { $pull: { likes: event._id } })
+                return res.status(200).json({ message: 'event successfully deleted' })
+            }
+        
+        return res.status(404).json({ message: 'event not found' })
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
+} 
+// add event to user 
+exports.addEvent = async (req, res) => {
+    try {
+        const user = await User.findOne({ _id: req.user.userId })
+        const event = new Event({
+            name:req.body.name,
+            date:req.body.date,
+            description : req.body.description,
+            location:req.body.location,
+            type:req.body.type,
+            user: user._id,
+
+
+        })
+
+
+
+        await User.updateOne({ _id: req.user.userId }, { $push: { events: event } })
+        await event.save()
+        return res.status(200).json({ message: 'event successfully saved' })
+
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
+}
+//delete event to user
+exports.deleteEvent = async (req, res) => {
+    try {
+
+
+        const event = await Event.findOne({ _id: req.params.eventId })
+        if (event) {
+
+            await User.updateOne({ _id: req.user.userId }, { $pull: { events: event._id } })
+            return res.status(200).json({ message: 'event successfully deleted' })
+        }
+
+        return res.status(404).json({ message: 'event not found' })
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
+}

@@ -17,7 +17,7 @@ type : {
         type : String
     },
     date : {
-        type: Date
+        type: String
     },
     location:{
         type:String,
