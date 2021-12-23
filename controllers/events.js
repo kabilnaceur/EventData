@@ -50,7 +50,7 @@ exports.createEvent = (req,res)=>{
         name:req.body.name,
         date:req.body.date,
         description : req.body.description,
-        numberParticipants:req.body.numberParticipants,
+        location:req.body.location,
         type:req.body.type,
         user : req.user.userId
 
@@ -69,7 +69,7 @@ exports.updateEvent = async (req,res)=> {
     const name = req.body.name
     const date= req.body.date
    const description =req.body.description
-   const numberParticipants=req.body.numberParticipants
+   const location=req.body.location
    const type=req.body.type
     Event.findOneAndUpdate(
         { _id: req.params.eventId},
@@ -77,7 +77,7 @@ exports.updateEvent = async (req,res)=> {
             name:req.body.name,
             date:req.body.date,
             description : req.body.description,
-            numberParticipants:req.body.numberParticipants,
+            location:req.body.location,
             type:req.body.type,
 
         },
@@ -85,7 +85,7 @@ exports.updateEvent = async (req,res)=> {
          },
          {useFindAndModify: false}
     ).then(result=>{
-res.status(200).json({event:result,name:name,type:type,numberParticipants:numberParticipants,date:date,description:description})
+res.status(200).json({event:result,name:name,type:type,location:location,date:date,description:description})
     }
 
     ).catch(err=>{
