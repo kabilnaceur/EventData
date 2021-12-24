@@ -235,7 +235,7 @@ exports.addParticipants = async (req, res) => {
         console.log(error)
     }
 }
-// add  participants
+// delete  participants
 exports.deleteParticipants = async (req, res) => {
     try {
        

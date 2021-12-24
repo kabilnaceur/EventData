@@ -177,7 +177,7 @@ exports.getCurrentUser = async (req, res) => {
         .populate({ path: 'events', model: 'Event' })
 
             .exec()
-            const userNotifications = await Notification.find({ user: req.user._id })
+            const userNotifications = await Notification.find({ user: req.user.userId })
 
         res.status(200).json({ connectedUser: user[0] ,notifications: userNotifications})
     } catch (error) {
@@ -297,7 +297,7 @@ exports.deleteEvent = async (req, res) => {
 exports.userLogout = async (req, res) => {
     try {
         await Token.deleteOne({
-            user: req.user._id,
+            user: req.user.userId,
         });
 
         res.status(200).json({
@@ -338,7 +338,7 @@ exports.updateUser = async (req, res) => {
 exports.markNotificationsAsRead = async (req, res) => {
 
     try {
-        await Notification.updateMany({ user: req.user._id }, { $set: { read: true } })
+        await Notification.updateMany({ user: req.user.userId }, { $set: { read: true } })
         res.status(200).json({ message: 'notifications successfully readed' });
     } catch (error) {
         res.status(500).json({ error: error });
@@ -347,7 +347,7 @@ exports.markNotificationsAsRead = async (req, res) => {
 // update notif
 exports.updateUserNotificationToken = async (req, res) => {
     try {
-        await User.updateOne({ _id: req.user._id }, { $set: { notificationToken: req.body.token } })
+        await User.updateOne({ _id: req.user.userId}, { $set: { notificationToken: req.body.token } })
         res.status(200).json({ message: 'notification token successfully updated' })
     } catch (error) {
         res.status(500).json({ error: error })
