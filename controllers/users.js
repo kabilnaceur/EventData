@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const Event = require('../models/event')
 const mongoose = require('mongoose')
+const Notification = require('../models/Notification')
+const sendMobileNotification = require('../middleware/sendMobileNotification')
 
 //get all users
 
@@ -175,7 +177,9 @@ exports.getCurrentUser = async (req, res) => {
         .populate({ path: 'events', model: 'Event' })
 
             .exec()
-        res.status(200).json({ connectedUser: user[0] })
+            const userNotifications = await Notification.find({ user: req.user._id })
+
+        res.status(200).json({ connectedUser: user[0] ,notifications: userNotifications})
     } catch (error) {
         console.log(error)
         res.status(500).json({ error: error.message });
@@ -187,15 +191,30 @@ exports.getCurrentUser = async (req, res) => {
 exports.addLikes = async (req, res) => {
     try {
         const eventId = req.body.eventId
+        const currentUser = await User.findOne({ _id: req.user.userId })
         const isValidId = mongoose.Types.ObjectId.isValid(eventId)
+        const event = await Event.findOne({ _id: eventId })
+
         if (isValidId) {
-            const event = await Event.findOne({ _id: eventId })
             if (event) {
 
                 await User.updateOne({ _id: req.user.userId }, { $push: { likes: event } })
                 return res.status(200).json({ message: 'event successfully saved' })
             }
         }
+        const newNotification = {
+            type: 'like',
+            date: new Date().toISOString(),
+            user: event.user,
+            variables: JSON.stringify({
+                user: { _id: currentUser._id, name: currentUser.name},
+                event:{ _id: event._id, name: event.name},
+                date: new Date().toISOString()
+            })
+        }
+        await Notification.create(newNotification)
+
+        sendMobileNotification(JSON.stringify(newNotification), event.user.notificationToken)
         return res.status(404).json({ message: 'event not found' })
 
 
@@ -314,4 +333,23 @@ exports.updateUser = async (req, res) => {
     })
 
 
+}
+// read notification
+exports.markNotificationsAsRead = async (req, res) => {
+
+    try {
+        await Notification.updateMany({ user: req.user._id }, { $set: { read: true } })
+        res.status(200).json({ message: 'notifications successfully readed' });
+    } catch (error) {
+        res.status(500).json({ error: error });
+    }
+}
+// update notif
+exports.updateUserNotificationToken = async (req, res) => {
+    try {
+        await User.updateOne({ _id: req.user._id }, { $set: { notificationToken: req.body.token } })
+        res.status(200).json({ message: 'notification token successfully updated' })
+    } catch (error) {
+        res.status(500).json({ error: error })
+    }
 }

@@ -19,6 +19,8 @@ email : {
  
 events: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
 likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
+notificationToken: { type: String },
+
 
 })
 module.exports = mongoose.model('User',UserSchema)

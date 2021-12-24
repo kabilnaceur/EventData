@@ -1,7 +1,8 @@
 const Event = require('../models/event')
 const User = require('../models/user')
 const Comment = require('../models/comment')
-
+const Notification = require('../models/Notification')
+const sendMobileNotification = require('../middleware/sendMobileNotification')
 // get all events
 exports.getEvents = async (req,res)=> {
     Event.find()
@@ -115,6 +116,7 @@ res.status(200).json({event:result,name:name,type:type,location:location,date:da
 exports.addComment = async (req, res) => {
     try {
         const user = await User.findOne({ _id: req.user.userId })
+        const event = await Event.findOne({ _id: req.body.eventId })
         const comment = new Comment({
             comment:req.body.comment,
             user: user._id,
@@ -126,6 +128,19 @@ exports.addComment = async (req, res) => {
 
         await Event.updateOne({ _id: req.body.eventId }, { $push: { comments: comment } })
         await comment.save()
+        const newNotification = {
+            type: 'comment',
+            date: new Date().toISOString(),
+            user: event.user,
+            variables: JSON.stringify({
+                user: { _id: user._id, name: user.name},
+                event:{ _id: event._id, name: event.name},
+                date: new Date().toISOString()
+            })
+        }
+        await Notification.create(newNotification)
+
+        sendMobileNotification(JSON.stringify(newNotification), event.user.notificationToken)
         return res.status(200).json({ message: 'comment successfully saved' })
 
 
@@ -200,3 +215,43 @@ exports.searchEvents = async (req, res) => {
     }
 
 }
+// add  participants
+exports.addParticipants = async (req, res) => {
+    try {
+        const userId = req.user._id 
+
+        const user = await User.findOne({ _id: userId})
+        const event = await Event.findOne({ _id: req.params.eventId })
+            if (event) {
+
+                await Event.updateOne({ _id: event._id}, { $push: { participants: user} })
+                return res.status(200).json({ message: 'participant successfully saved' })
+            }
+        
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
+}
+// add  participants
+exports.deleteParticipants = async (req, res) => {
+    try {
+       
+      
+            const user = await User.findOne({ _id: req.params.userId })
+            if (user) {
+
+                await Event.updateOne({ _id: req.params.eventId}, { $pull: { participants: user._id } })
+                return res.status(200).json({ message: 'participant successfully deleted' })
+            }
+        
+        return res.status(404).json({ message: 'participant not found' })
+
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+        console.log(error)
+    }
+} 

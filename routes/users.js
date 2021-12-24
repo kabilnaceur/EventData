@@ -16,5 +16,7 @@ router.post('/likes',check,UserController.addLikes)
 router.delete('/likes/:eventId',check,UserController.deleteLike)
 router.patch('/logout', check, UserController.userLogout)
 router.put ('/:userId',check,UserController.updateUser)
+router.patch('/notifications', check,UserController.markNotificationsAsRead)
+router.patch('/notification-token', check, UserController.updateUserNotificationToken)
 
 module.exports = router ;
