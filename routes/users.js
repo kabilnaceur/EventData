@@ -15,5 +15,6 @@ router.delete('/events/:eventId',check,UserController.deleteEvent)
 router.post('/likes',check,UserController.addLikes)
 router.delete('/likes/:eventId',check,UserController.deleteLike)
 router.patch('/logout', check, UserController.userLogout)
+router.put ('/:userId',check,UserController.updateUser)
 
 module.exports = router ;

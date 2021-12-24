@@ -5,6 +5,7 @@ const EventController = require('../controllers/events')
 
 router.get('/',check,EventController.getEvents)
 router.get ('/:eventId',check,EventController.getEvent)
+router.get('/search',check, EventController.searchEvents)
 router.delete ('/:eventId',check,EventController.deleteEvent)
 router.post('/',check,EventController.createEvent)
 router.put ('/:eventId',check,EventController.updateEvent)

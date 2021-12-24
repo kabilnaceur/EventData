@@ -155,3 +155,48 @@ exports.deleteComment = async (req, res) => {
         console.log(error)
     }
 }
+// search event
+exports.searchEvents = async (req, res) => {
+    try {
+        let searchTerm = req.query.searchTerm
+        let searchedUserId = []
+        let events;
+        
+
+        if (searchTerm) {
+            const searchedUser = await User.find({ name: { $regex: `(?:${searchTerm.split(' ').join('|')})`, $options: 'i' } })
+            
+            searchedUserId = searchedUser.map(searched => searched._id)
+
+            events = await Event.find({
+                $or: [
+
+                    {
+                        name: { $regex: `(?:${searchTerm.split(' ').join('|')})`, $options: 'i' }
+                    },
+                    {
+                        user: { $in: searchedUserId }
+                    },
+                ],                    
+                   
+                
+            })      .populate({ path: 'user', model: 'User' })
+            .populate({
+                path: 'comments', model: 'Comment', populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
+
+            res.status(200).json({ events: events})
+        }
+
+    }
+    catch (error) {
+        console.log(error)
+        return res.status(500).json({ error: error });
+        
+
+    }
+
+}

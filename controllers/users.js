@@ -172,7 +172,8 @@ exports.getCurrentUser = async (req, res) => {
         console.log(req.user)
 
         const user = await User.find({ _id: req.user.userId})
-            
+        .populate({ path: 'events', model: 'Event' })
+
             .exec()
         res.status(200).json({ connectedUser: user[0] })
     } catch (error) {
@@ -287,3 +288,30 @@ exports.userLogout = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// edit user
+exports.updateUser = async (req, res) => {
+    const name = req.body.name
+    const email = req.body.email
+    const username = req.body.login
+    User.findOneAndUpdate(
+        { _id: req.params.userId },
+        {
+            $set: {
+                name:name,
+                email: email,
+                username: username,
+
+            }
+        }
+    ).then(result => {
+        res.status(200).json({ User: result , name : name , email:email,username:username})
+    }
+
+    ).catch(err => {
+        
+        console.log(err)
+        res.status(500).json({ error: err })
+    })
+
+
+}
